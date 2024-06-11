@@ -38,8 +38,11 @@ class PointOfInterest {
   String toString() => 'PointOfInterest{placeId: $placeId, name: $name, position: $position}';
 
   @override
-  bool operator ==(Object o) {
-    return o is PointOfInterest && o.position == position && o.name == name && o.placeId == placeId;
+  bool operator ==(Object other) {
+    return other is PointOfInterest &&
+        other.position == position &&
+        other.name == name &&
+        other.placeId == placeId;
   }
 
   @override

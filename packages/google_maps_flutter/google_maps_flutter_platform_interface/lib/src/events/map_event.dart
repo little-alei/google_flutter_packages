@@ -4,8 +4,6 @@
 
 import '../../google_maps_flutter_platform_interface.dart';
 
-import '../types/point_of_interest.dart';
-
 /// Generic Event coming from the native side of Maps.
 ///
 /// All MapEvents contain the `mapId` that originated the event. This should
