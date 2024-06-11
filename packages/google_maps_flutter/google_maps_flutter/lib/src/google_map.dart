@@ -40,11 +40,9 @@ class UnknownMapObjectIdError extends Error {
 }
 
 /// Android specific settings for [GoogleMap].
-@Deprecated(
-    'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
+@Deprecated('See https://pub.dev/packages/google_maps_flutter_android#display-mode')
 class AndroidGoogleMapsFlutter {
-  @Deprecated(
-      'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
+  @Deprecated('See https://pub.dev/packages/google_maps_flutter_android#display-mode')
   AndroidGoogleMapsFlutter._();
 
   /// Whether to render [GoogleMap] with a [AndroidViewSurface] to build the Google Maps widget.
@@ -54,11 +52,9 @@ class AndroidGoogleMapsFlutter {
   /// versions below 10. See
   /// https://flutter.dev/docs/development/platform-integration/platform-views#performance for more
   /// information.
-  @Deprecated(
-      'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
+  @Deprecated('See https://pub.dev/packages/google_maps_flutter_android#display-mode')
   static bool get useAndroidViewSurface {
-    final GoogleMapsFlutterPlatform platform =
-        GoogleMapsFlutterPlatform.instance;
+    final GoogleMapsFlutterPlatform platform = GoogleMapsFlutterPlatform.instance;
     if (platform is GoogleMapsFlutterAndroid) {
       return platform.useAndroidViewSurface;
     }
@@ -72,11 +68,9 @@ class AndroidGoogleMapsFlutter {
   /// versions below 10. See
   /// https://flutter.dev/docs/development/platform-integration/platform-views#performance for more
   /// information.
-  @Deprecated(
-      'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
+  @Deprecated('See https://pub.dev/packages/google_maps_flutter_android#display-mode')
   static set useAndroidViewSurface(bool useAndroidViewSurface) {
-    final GoogleMapsFlutterPlatform platform =
-        GoogleMapsFlutterPlatform.instance;
+    final GoogleMapsFlutterPlatform platform = GoogleMapsFlutterPlatform.instance;
     if (platform is GoogleMapsFlutterAndroid) {
       platform.useAndroidViewSurface = useAndroidViewSurface;
     }
@@ -126,6 +120,7 @@ class GoogleMap extends StatefulWidget {
     this.onCameraIdle,
     this.onTap,
     this.onLongPress,
+    this.onPoiTap,
     this.cloudMapId,
   });
 
@@ -244,6 +239,9 @@ class GoogleMap extends StatefulWidget {
   /// Called every time a [GoogleMap] is long pressed.
   final ArgumentCallback<LatLng>? onLongPress;
 
+  /// Called every time a [PointOfInterest] is clicked.
+  final ArgumentCallback<PointOfInterest>? onPoiTap;
+
   /// True if a "My Location" layer should be shown on the map.
   ///
   /// This layer includes a location indicator at the current device location,
@@ -321,8 +319,7 @@ class GoogleMap extends StatefulWidget {
 class _GoogleMapState extends State<GoogleMap> {
   final int _mapId = _nextMapCreationId++;
 
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
   Map<PolygonId, Polygon> _polygons = <PolygonId, Polygon>{};
@@ -336,9 +333,8 @@ class _GoogleMapState extends State<GoogleMap> {
       _mapId,
       onPlatformViewCreated,
       widgetConfiguration: MapWidgetConfiguration(
-        textDirection: widget.layoutDirection ??
-            Directionality.maybeOf(context) ??
-            TextDirection.ltr,
+        textDirection:
+            widget.layoutDirection ?? Directionality.maybeOf(context) ?? TextDirection.ltr,
         initialCameraPosition: widget.initialCameraPosition,
         gestureRecognizers: widget.gestureRecognizers,
       ),
@@ -397,29 +393,29 @@ class _GoogleMapState extends State<GoogleMap> {
 
   Future<void> _updateMarkers() async {
     final GoogleMapController controller = await _controller.future;
-    unawaited(controller._updateMarkers(
-        MarkerUpdates.from(_markers.values.toSet(), widget.markers)));
+    unawaited(
+        controller._updateMarkers(MarkerUpdates.from(_markers.values.toSet(), widget.markers)));
     _markers = keyByMarkerId(widget.markers);
   }
 
   Future<void> _updatePolygons() async {
     final GoogleMapController controller = await _controller.future;
-    unawaited(controller._updatePolygons(
-        PolygonUpdates.from(_polygons.values.toSet(), widget.polygons)));
+    unawaited(
+        controller._updatePolygons(PolygonUpdates.from(_polygons.values.toSet(), widget.polygons)));
     _polygons = keyByPolygonId(widget.polygons);
   }
 
   Future<void> _updatePolylines() async {
     final GoogleMapController controller = await _controller.future;
-    unawaited(controller._updatePolylines(
-        PolylineUpdates.from(_polylines.values.toSet(), widget.polylines)));
+    unawaited(controller
+        ._updatePolylines(PolylineUpdates.from(_polylines.values.toSet(), widget.polylines)));
     _polylines = keyByPolylineId(widget.polylines);
   }
 
   Future<void> _updateCircles() async {
     final GoogleMapController controller = await _controller.future;
-    unawaited(controller._updateCircles(
-        CircleUpdates.from(_circles.values.toSet(), widget.circles)));
+    unawaited(
+        controller._updateCircles(CircleUpdates.from(_circles.values.toSet(), widget.circles)));
     _circles = keyByCircleId(widget.circles);
   }
 
@@ -541,6 +537,13 @@ class _GoogleMapState extends State<GoogleMap> {
     final ArgumentCallback<LatLng>? onLongPress = widget.onLongPress;
     if (onLongPress != null) {
       onLongPress(position);
+    }
+  }
+
+  void onPoiTap(PointOfInterest poi) {
+    final ArgumentCallback<PointOfInterest>? onPoiTap = widget.onPoiTap;
+    if (onPoiTap != null) {
+      onPoiTap(poi);
     }
   }
 }

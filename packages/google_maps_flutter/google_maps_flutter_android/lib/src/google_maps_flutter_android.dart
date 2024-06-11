@@ -60,8 +60,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   }
 
   /// The method channel used to initialize the native Google Maps SDK.
-  final MethodChannel _initializerChannel = const MethodChannel(
-      'plugins.flutter.dev/google_maps_android_initializer');
+  final MethodChannel _initializerChannel =
+      const MethodChannel('plugins.flutter.dev/google_maps_android_initializer');
 
   // Keep a collection of id -> channel
   // Every method call passes the int mapId
@@ -86,8 +86,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     MethodChannel? channel = _channels[mapId];
     if (channel == null) {
       channel = MethodChannel('plugins.flutter.dev/google_maps_android_$mapId');
-      channel.setMethodCallHandler(
-          (MethodCall call) => _handleMethodCall(call, mapId));
+      channel.setMethodCallHandler((MethodCall call) => _handleMethodCall(call, mapId));
       _channels[mapId] = channel;
     }
     return channel;
@@ -114,8 +113,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
 
   // Returns a filtered view of the events in the _controller, by mapId.
   Stream<MapEvent<Object?>> _events(int mapId) =>
-      _mapEventStreamController.stream
-          .where((MapEvent<Object?> event) => event.mapId == mapId);
+      _mapEventStreamController.stream.where((MapEvent<Object?> event) => event.mapId == mapId);
 
   @override
   Stream<CameraMoveStartedEvent> onCameraMoveStarted({required int mapId}) {
@@ -180,6 +178,11 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   @override
   Stream<MapLongPressEvent> onLongPress({required int mapId}) {
     return _events(mapId).whereType<MapLongPressEvent>();
+  }
+
+  @override
+  Stream<MapPoiTapEvent> onPoiTap({required int mapId}) {
+    return _events(mapId).whereType<MapPoiTapEvent>();
   }
 
   @override
@@ -262,13 +265,21 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
           mapId,
           LatLng.fromJson(arguments['position'])!,
         ));
+      case 'map#onPoiTap':
+        final Map<String, Object?> arguments = _getArgumentDictionary(call);
+        _mapEventStreamController.add(MapPoiTapEvent(
+          mapId,
+          PointOfInterest(
+            position: LatLng.fromJson(arguments['position'])!,
+            name: arguments['name']! as String,
+            placeId: arguments['placeId']! as String,
+          ),
+        ));
       case 'tileOverlay#getTile':
         final Map<String, Object?> arguments = _getArgumentDictionary(call);
-        final Map<TileOverlayId, TileOverlay>? tileOverlaysForThisMap =
-            _tileOverlays[mapId];
+        final Map<TileOverlayId, TileOverlay>? tileOverlaysForThisMap = _tileOverlays[mapId];
         final String tileOverlayId = arguments['tileOverlayId']! as String;
-        final TileOverlay? tileOverlay =
-            tileOverlaysForThisMap?[TileOverlayId(tileOverlayId)];
+        final TileOverlay? tileOverlay = tileOverlaysForThisMap?[TileOverlayId(tileOverlayId)];
         final TileProvider? tileProvider = tileOverlay?.tileProvider;
         if (tileProvider == null) {
           return TileProvider.noTile.toJson();
@@ -365,13 +376,10 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     required Set<TileOverlay> newTileOverlays,
     required int mapId,
   }) {
-    final Map<TileOverlayId, TileOverlay>? currentTileOverlays =
-        _tileOverlays[mapId];
-    final Set<TileOverlay> previousSet = currentTileOverlays != null
-        ? currentTileOverlays.values.toSet()
-        : <TileOverlay>{};
-    final _TileOverlayUpdates updates =
-        _TileOverlayUpdates.from(previousSet, newTileOverlays);
+    final Map<TileOverlayId, TileOverlay>? currentTileOverlays = _tileOverlays[mapId];
+    final Set<TileOverlay> previousSet =
+        currentTileOverlays != null ? currentTileOverlays.values.toSet() : <TileOverlay>{};
+    final _TileOverlayUpdates updates = _TileOverlayUpdates.from(previousSet, newTileOverlays);
     _tileOverlays[mapId] = keyTileOverlayId(newTileOverlays);
     return _channel(mapId).invokeMethod<void>(
       'tileOverlays#update',
@@ -395,8 +403,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     TileOverlayId tileOverlayId, {
     required int mapId,
   }) {
-    return _channel(mapId)
-        .invokeMethod<void>('tileOverlays#clearTileCache', <String, Object>{
+    return _channel(mapId).invokeMethod<void>('tileOverlays#clearTileCache', <String, Object>{
       'tileOverlayId': tileOverlayId.value,
     });
   }
@@ -406,8 +413,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     CameraUpdate cameraUpdate, {
     required int mapId,
   }) {
-    return _channel(mapId)
-        .invokeMethod<void>('camera#animate', <String, Object>{
+    return _channel(mapId).invokeMethod<void>('camera#animate', <String, Object>{
       'cameraUpdate': cameraUpdate.toJson(),
     });
   }
@@ -427,8 +433,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     String? mapStyle, {
     required int mapId,
   }) async {
-    final List<dynamic> successAndError = (await _channel(mapId)
-        .invokeMethod<List<dynamic>>('map#setStyle', mapStyle))!;
+    final List<dynamic> successAndError =
+        (await _channel(mapId).invokeMethod<List<dynamic>>('map#setStyle', mapStyle))!;
     final bool success = successAndError[0] as bool;
     if (!success) {
       throw MapStyleException(successAndError[1] as String);
@@ -439,8 +445,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   Future<LatLngBounds> getVisibleRegion({
     required int mapId,
   }) async {
-    final Map<String, dynamic> latLngBounds = (await _channel(mapId)
-        .invokeMapMethod<String, dynamic>('map#getVisibleRegion'))!;
+    final Map<String, dynamic> latLngBounds =
+        (await _channel(mapId).invokeMapMethod<String, dynamic>('map#getVisibleRegion'))!;
     final LatLng southwest = LatLng.fromJson(latLngBounds['southwest'])!;
     final LatLng northeast = LatLng.fromJson(latLngBounds['northeast'])!;
 
@@ -453,8 +459,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     required int mapId,
   }) async {
     final Map<String, int> point = (await _channel(mapId)
-        .invokeMapMethod<String, int>(
-            'map#getScreenCoordinate', latLng.toJson()))!;
+        .invokeMapMethod<String, int>('map#getScreenCoordinate', latLng.toJson()))!;
 
     return ScreenCoordinate(x: point['x']!, y: point['y']!);
   }
@@ -465,8 +470,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     required int mapId,
   }) async {
     final List<dynamic> latLng = (await _channel(mapId)
-        .invokeMethod<List<dynamic>>(
-            'map#getLatLng', screenCoordinate.toJson()))!;
+        .invokeMethod<List<dynamic>>('map#getLatLng', screenCoordinate.toJson()))!;
     return LatLng(latLng[0] as double, latLng[1] as double);
   }
 
@@ -475,8 +479,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     MarkerId markerId, {
     required int mapId,
   }) {
-    return _channel(mapId).invokeMethod<void>(
-        'markers#showInfoWindow', <String, String>{'markerId': markerId.value});
+    return _channel(mapId)
+        .invokeMethod<void>('markers#showInfoWindow', <String, String>{'markerId': markerId.value});
   }
 
   @override
@@ -484,8 +488,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     MarkerId markerId, {
     required int mapId,
   }) {
-    return _channel(mapId).invokeMethod<void>(
-        'markers#hideInfoWindow', <String, String>{'markerId': markerId.value});
+    return _channel(mapId)
+        .invokeMethod<void>('markers#hideInfoWindow', <String, String>{'markerId': markerId.value});
   }
 
   @override
@@ -494,8 +498,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     required int mapId,
   }) async {
     return (await _channel(mapId).invokeMethod<bool>(
-        'markers#isInfoWindowShown',
-        <String, String>{'markerId': markerId.value}))!;
+        'markers#isInfoWindowShown', <String, String>{'markerId': markerId.value}))!;
   }
 
   @override
@@ -537,8 +540,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   ///
   /// The returned [Future] completes after renderer has been initialized.
   /// Initialized [AndroidMapRenderer] type is returned.
-  Future<AndroidMapRenderer> initializeWithRenderer(
-      AndroidMapRenderer? rendererType) async {
+  Future<AndroidMapRenderer> initializeWithRenderer(AndroidMapRenderer? rendererType) async {
     String preferredRenderer;
     switch (rendererType) {
       case AndroidMapRenderer.latest:
@@ -550,9 +552,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
         preferredRenderer = 'default';
     }
 
-    final String? initializedRenderer = await _initializerChannel
-        .invokeMethod<String>('initializer#preferRenderer',
-            <String, dynamic>{'value': preferredRenderer});
+    final String? initializedRenderer = await _initializerChannel.invokeMethod<String>(
+        'initializer#preferRenderer', <String, dynamic>{'value': preferredRenderer});
 
     if (initializedRenderer == null) {
       throw AndroidMapRendererException('Failed to initialize map renderer.');
@@ -578,16 +579,14 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
     final Map<String, dynamic> creationParams = <String, dynamic>{
-      'initialCameraPosition':
-          widgetConfiguration.initialCameraPosition.toMap(),
+      'initialCameraPosition': widgetConfiguration.initialCameraPosition.toMap(),
       'options': mapOptions,
       'markersToAdd': serializeMarkerSet(mapObjects.markers),
       'polygonsToAdd': serializePolygonSet(mapObjects.polygons),
       'polylinesToAdd': serializePolylineSet(mapObjects.polylines),
       'circlesToAdd': serializeCircleSet(mapObjects.circles),
       'tileOverlaysToAdd': serializeTileOverlaySet(mapObjects.tileOverlays),
-      'clusterManagersToAdd':
-          serializeClusterManagerSet(mapObjects.clusterManagers),
+      'clusterManagersToAdd': serializeClusterManagerSet(mapObjects.clusterManagers),
     };
 
     const String viewType = 'plugins.flutter.dev/google_maps_android';
@@ -605,8 +604,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
           );
         },
         onCreatePlatformView: (PlatformViewCreationParams params) {
-          final AndroidViewController controller =
-              PlatformViewsService.initExpensiveAndroidView(
+          final AndroidViewController controller = PlatformViewsService.initExpensiveAndroidView(
             id: params.id,
             viewType: viewType,
             layoutDirection: widgetConfiguration.textDirection,
@@ -673,8 +671,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       creationId,
       onPlatformViewCreated,
       widgetConfiguration: MapWidgetConfiguration(
-          initialCameraPosition: initialCameraPosition,
-          textDirection: textDirection),
+          initialCameraPosition: initialCameraPosition, textDirection: textDirection),
       mapObjects: MapObjects(
           markers: markers,
           polygons: polygons,
@@ -726,26 +723,20 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   /// Parses cluster data from dynamic json objects and returns [Cluster] object.
   /// Used by the `cluster#onTap` method call handler and the
   /// [GoogleMapsInspectorAndroid.getClusters] response parser.
-  static Cluster parseCluster(
-      String clusterManagerIdString,
-      Object positionObject,
-      Map<dynamic, dynamic> boundsMap,
-      List<dynamic> markerIdsList) {
-    final ClusterManagerId clusterManagerId =
-        ClusterManagerId(clusterManagerIdString);
+  static Cluster parseCluster(String clusterManagerIdString, Object positionObject,
+      Map<dynamic, dynamic> boundsMap, List<dynamic> markerIdsList) {
+    final ClusterManagerId clusterManagerId = ClusterManagerId(clusterManagerIdString);
     final LatLng position = LatLng.fromJson(positionObject)!;
 
-    final Map<String, List<dynamic>> latLngData = boundsMap.map(
-        (dynamic key, dynamic object) => MapEntry<String, List<dynamic>>(
-            key as String, object as List<dynamic>));
+    final Map<String, List<dynamic>> latLngData = boundsMap.map((dynamic key, dynamic object) =>
+        MapEntry<String, List<dynamic>>(key as String, object as List<dynamic>));
 
     final LatLngBounds bounds = LatLngBounds(
         northeast: LatLng.fromJson(latLngData['northeast'])!,
         southwest: LatLng.fromJson(latLngData['southwest'])!);
 
-    final List<MarkerId> markerIds = markerIdsList
-        .map((dynamic markerId) => MarkerId(markerId as String))
-        .toList();
+    final List<MarkerId> markerIds =
+        markerIdsList.map((dynamic markerId) => MarkerId(markerId as String)).toList();
 
     return Cluster(
       clusterManagerId,
@@ -760,8 +751,7 @@ Map<String, Object> _jsonForMapConfiguration(MapConfiguration config) {
   final EdgeInsets? padding = config.padding;
   return <String, Object>{
     if (config.compassEnabled != null) 'compassEnabled': config.compassEnabled!,
-    if (config.mapToolbarEnabled != null)
-      'mapToolbarEnabled': config.mapToolbarEnabled!,
+    if (config.mapToolbarEnabled != null) 'mapToolbarEnabled': config.mapToolbarEnabled!,
     if (config.cameraTargetBounds != null)
       'cameraTargetBounds': config.cameraTargetBounds!.toJson(),
     if (config.mapType != null) 'mapType': config.mapType!.index,
@@ -771,18 +761,12 @@ Map<String, Object> _jsonForMapConfiguration(MapConfiguration config) {
       'rotateGesturesEnabled': config.rotateGesturesEnabled!,
     if (config.scrollGesturesEnabled != null)
       'scrollGesturesEnabled': config.scrollGesturesEnabled!,
-    if (config.tiltGesturesEnabled != null)
-      'tiltGesturesEnabled': config.tiltGesturesEnabled!,
-    if (config.zoomControlsEnabled != null)
-      'zoomControlsEnabled': config.zoomControlsEnabled!,
-    if (config.zoomGesturesEnabled != null)
-      'zoomGesturesEnabled': config.zoomGesturesEnabled!,
-    if (config.liteModeEnabled != null)
-      'liteModeEnabled': config.liteModeEnabled!,
-    if (config.trackCameraPosition != null)
-      'trackCameraPosition': config.trackCameraPosition!,
-    if (config.myLocationEnabled != null)
-      'myLocationEnabled': config.myLocationEnabled!,
+    if (config.tiltGesturesEnabled != null) 'tiltGesturesEnabled': config.tiltGesturesEnabled!,
+    if (config.zoomControlsEnabled != null) 'zoomControlsEnabled': config.zoomControlsEnabled!,
+    if (config.zoomGesturesEnabled != null) 'zoomGesturesEnabled': config.zoomGesturesEnabled!,
+    if (config.liteModeEnabled != null) 'liteModeEnabled': config.liteModeEnabled!,
+    if (config.trackCameraPosition != null) 'trackCameraPosition': config.trackCameraPosition!,
+    if (config.myLocationEnabled != null) 'myLocationEnabled': config.myLocationEnabled!,
     if (config.myLocationButtonEnabled != null)
       'myLocationButtonEnabled': config.myLocationButtonEnabled!,
     if (padding != null)
@@ -792,11 +776,9 @@ Map<String, Object> _jsonForMapConfiguration(MapConfiguration config) {
         padding.bottom,
         padding.right,
       ],
-    if (config.indoorViewEnabled != null)
-      'indoorEnabled': config.indoorViewEnabled!,
+    if (config.indoorViewEnabled != null) 'indoorEnabled': config.indoorViewEnabled!,
     if (config.trafficEnabled != null) 'trafficEnabled': config.trafficEnabled!,
-    if (config.buildingsEnabled != null)
-      'buildingsEnabled': config.buildingsEnabled!,
+    if (config.buildingsEnabled != null) 'buildingsEnabled': config.buildingsEnabled!,
     if (config.cloudMapId != null) 'cloudMapId': config.cloudMapId!,
     if (config.style != null) 'style': config.style!,
   };
@@ -807,15 +789,13 @@ Map<String, Object> _jsonForMapConfiguration(MapConfiguration config) {
 // interface, and remove this copy.
 class _TileOverlayUpdates extends MapsObjectUpdates<TileOverlay> {
   /// Computes [TileOverlayUpdates] given previous and current [TileOverlay]s.
-  _TileOverlayUpdates.from(super.previous, super.current)
-      : super.from(objectName: 'tileOverlay');
+  _TileOverlayUpdates.from(super.previous, super.current) : super.from(objectName: 'tileOverlay');
 
   /// Set of TileOverlays to be added in this update.
   Set<TileOverlay> get tileOverlaysToAdd => objectsToAdd;
 
   /// Set of TileOverlayIds to be removed in this update.
-  Set<TileOverlayId> get tileOverlayIdsToRemove =>
-      objectIdsToRemove.cast<TileOverlayId>();
+  Set<TileOverlayId> get tileOverlayIdsToRemove => objectIdsToRemove.cast<TileOverlayId>();
 
   /// Set of TileOverlays to be changed in this update.
   Set<TileOverlay> get tileOverlaysToChange => objectsToChange;

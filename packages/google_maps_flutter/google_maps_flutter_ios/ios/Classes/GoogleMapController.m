@@ -580,6 +580,12 @@
          arguments:@{@"position" : [FLTGoogleMapJSONConversions arrayFromLocation:coordinate]}];
 }
 
+- (void)mapView:(GMSMapView *)mapView didTapPOIWithPlaceID:(NSString *)placeID name:(NSString *)name location:(CLLocationCoordinate2D)location {
+  [self.channel
+      invokeMethod:@"map#onPoiTap"
+         arguments:@{@"position" : [FLTGoogleMapJSONConversions arrayFromLocation:location], @"name" : name, @"placeId" : placeID, }];
+}
+
 - (void)interpretMapOptions:(NSDictionary *)data {
   NSArray *cameraTargetBounds = data[@"cameraTargetBounds"];
   if (cameraTargetBounds && cameraTargetBounds != (id)[NSNull null]) {

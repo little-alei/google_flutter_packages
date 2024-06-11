@@ -1,3 +1,7 @@
+## 2.7.1
+
+* Add `GoogleMap.OnPoiTap`
+
 ## 2.7.0
 
 * Adds support for BitmapDescriptor classes `AssetMapBitmap` and `BytesMapBitmap`.

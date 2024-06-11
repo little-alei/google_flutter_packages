@@ -73,8 +73,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     MapConfiguration configuration, {
     required int mapId,
   }) {
-    return updateMapOptions(jsonForMapConfiguration(configuration),
-        mapId: mapId);
+    return updateMapOptions(jsonForMapConfiguration(configuration), mapId: mapId);
   }
 
   /// Updates marker configuration.
@@ -152,8 +151,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     ClusterManagerUpdates clusterManagerUpdates, {
     required int mapId,
   }) {
-    throw UnimplementedError(
-        'updateClusterManagers() has not been implemented.');
+    throw UnimplementedError('updateClusterManagers() has not been implemented.');
   }
 
   /// Clears the tile cache so that all tiles will be requested again from the
@@ -252,8 +250,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     MarkerId markerId, {
     required int mapId,
   }) {
-    throw UnimplementedError(
-        'showMarkerInfoWindow() has not been implemented.');
+    throw UnimplementedError('showMarkerInfoWindow() has not been implemented.');
   }
 
   /// Programmatically hide the Info Window for a [Marker].
@@ -268,8 +265,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     MarkerId markerId, {
     required int mapId,
   }) {
-    throw UnimplementedError(
-        'hideMarkerInfoWindow() has not been implemented.');
+    throw UnimplementedError('hideMarkerInfoWindow() has not been implemented.');
   }
 
   /// Returns `true` when the [InfoWindow] is showing, `false` otherwise.
@@ -369,6 +365,11 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
   /// A Map has been long-pressed at a certain [LatLng].
   Stream<MapLongPressEvent> onLongPress({required int mapId}) {
     throw UnimplementedError('onLongPress() has not been implemented.');
+  }
+
+  /// A Map has been tapped on a POI [LatLng, String, String].
+  Stream<MapPoiTapEvent> onPoiTap({required int mapId}) {
+    throw UnimplementedError('onPoiTap() has not been implemented.');
   }
 
   /// A marker icon managed by [ClusterManager] has been tapped.
@@ -471,7 +472,6 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
   /// inspecting the platform map state.
   @visibleForTesting
   void enableDebugInspection() {
-    throw UnimplementedError(
-        'enableDebugInspection() has not been implemented.');
+    throw UnimplementedError('enableDebugInspection() has not been implemented.');
   }
 }
